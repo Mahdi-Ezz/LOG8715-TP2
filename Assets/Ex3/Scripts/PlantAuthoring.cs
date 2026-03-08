@@ -1,4 +1,3 @@
-using System;
 using Unity.Entities;
 using UnityEngine;
 
@@ -19,11 +18,6 @@ public class PlantAuthoring : MonoBehaviour
                 DecreasingFactor = 1f,
                 AlwaysReproduce = true,
                 Reproduced = false
-            });
-
-            AddComponent(entity, new ScaleComponent
-            {
-                Value = 1
             });
         }
     }

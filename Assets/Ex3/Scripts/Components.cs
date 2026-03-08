@@ -4,6 +4,7 @@ using Unity.Mathematics;
 public struct PlantTag : IComponentData { }
 public struct PreyTag : IComponentData { }
 public struct PredatorTag : IComponentData { }
+public struct RespawnTag : IComponentData { }
 
 public struct VelocityComponent : IComponentData
 {
@@ -22,11 +23,18 @@ public struct LifetimeComponent : IComponentData
     public float GetProgression() => Current / Starting;
 }
 
-// Composant pour signaler qu'une entité doit être respawnée
-//public struct NeedsRespawnTag : IComponentData { }
-
-// Composant pour la taille visuelle (plant scale)
-public struct ScaleComponent : IComponentData
+public struct GameConfig : IComponentData
 {
-    public float Value;
+    public float HalfHeight;
+    public float HalfWidth;
+    //[SerializeField] public int plantCount = 200;
+    //[SerializeField] public int preyCount = 200;
+    //[SerializeField] public int predatorCount = 200;
+    //[SerializeField] public int gridSize = 600;
+
+    public float PreySpeed;
+    public float PredatorSpeed;
+    public float TouchingDistance;
 }
+
+

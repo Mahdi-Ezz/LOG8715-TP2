@@ -1,88 +1,148 @@
 using System;
+using Unity.Burst;
+using Unity.Collections;
+using Unity.Entities;
+using Unity.Mathematics;
+using Unity.Transforms;
 using UnityEngine;
-using Random = UnityEngine.Random;
 
-public class Ex4Spawner : MonoBehaviour
+public class Ex4SpawnerAuthoring : MonoBehaviour
 {
-    public static Transform[] PlantTransforms;
-    public static Transform[] PreyTransforms;
-    public static Transform[] PredatorTransforms;
-    
-    public static Lifetime[] PlantLifetimes;
-    public static Lifetime[] PreyLifetimes;
-    public static Lifetime[] PredatorLifetimes;
-    
-    public static Velocity[] PlantVelocities;
-    public static Velocity[] PreyVelocities;
-    public static Velocity[] PredatorVelocities;
-    
     public Ex3Config config;
     public GameObject predatorPrefab;
     public GameObject preyPrefab;
     public GameObject plantPrefab;
 
-    private int _height;
-    private int _width;
-    
-    public static Ex4Spawner Instance { get; private set; }
-
-    public void Respawn(Transform t)
+    class Baker : Baker<Ex4SpawnerAuthoring>
     {
-        var halfWidth = _width / 2;
-        var halfHeight = _height / 2;
-        t.position = new Vector3Int(Random.Range(-halfWidth, halfWidth), Random.Range(-halfHeight, halfHeight));
-    }
-
-    private void Awake()
-    {
-        Instance = this;
-    }
-
-    void Start()
-    {
-        var size = (float) config.gridSize;
-        var ratio = Camera.main!.aspect;
-        _height = (int)Math.Round(Math.Sqrt(size / ratio));
-        _width = (int)Math.Round(size / _height);
-        
-        PlantTransforms = new Transform[config.plantCount];
-        PlantLifetimes = new Lifetime[config.plantCount];
-        PlantVelocities = new Velocity[config.plantCount];
-        for (var i = 0; i < config.plantCount; i++)
+        public override void Bake(Ex4SpawnerAuthoring authoring)
         {
-            var go = Create(plantPrefab);
-            PlantTransforms[i] = go.transform;
-            PlantLifetimes[i] = go.GetComponent<Lifetime>();
-            PlantVelocities[i] = go.GetComponent<Velocity>();
-        }
+            var entity = GetEntity(TransformUsageFlags.None);
 
-        PreyTransforms = new Transform[config.preyCount];
-        PreyLifetimes = new Lifetime[config.preyCount];
-        PreyVelocities = new Velocity[config.preyCount];
-        for (var i = 0; i < config.preyCount; i++)
-        {
-            var go = Create(preyPrefab);
-            PreyTransforms[i] = go.transform;
-            PreyLifetimes[i] = go.GetComponent<Lifetime>();
-            PreyVelocities[i] = go.GetComponent<Velocity>();
-        }
-        
-        PredatorTransforms = new Transform[config.predatorCount];
-        PredatorLifetimes = new Lifetime[config.predatorCount];
-        PredatorVelocities = new Velocity[config.predatorCount];
-        for (var i = 0; i < config.predatorCount; i++)
-        {
-            var go = Create(predatorPrefab);
-            PredatorTransforms[i] = go.transform;
-            PredatorLifetimes[i] = go.GetComponent<Lifetime>();
-            PredatorVelocities[i] = go.GetComponent<Velocity>();
+            var plantEntity = GetEntity(authoring.plantPrefab, TransformUsageFlags.Dynamic);
+            var preyEntity = GetEntity(authoring.preyPrefab, TransformUsageFlags.Dynamic);
+            var predatorEntity = GetEntity(authoring.predatorPrefab, TransformUsageFlags.Dynamic);
+            var size = (float)authoring.config.gridSize;
+            var ratio = 2.088;
+
+            int halfHeight = (int)Math.Round(Math.Sqrt(size / ratio)) / 2;
+            int halfWidth = (int)Math.Round(size / (halfHeight * 2f)) / 2;
+
+            AddComponent(entity, new Ex4SpawnerData
+            {
+                PlantPrefab = plantEntity,
+                PreyPrefab = preyEntity,
+                PredatorPrefab = predatorEntity,
+                PlantCount = authoring.config.plantCount,
+                PreyCount = authoring.config.preyCount,
+                PredatorCount = authoring.config.predatorCount,
+                HalfWidth = halfWidth,
+                HalfHeight = halfHeight,
+                Spawned = 0
+            });
+            AddComponent(entity, new GameConfig
+            {
+                HalfHeight = halfHeight,
+                HalfWidth = halfWidth,
+                PreySpeed = Ex3Config.PreySpeed,
+                PredatorSpeed = Ex3Config.PredatorSpeed,
+                TouchingDistance = Ex3Config.TouchingDistance,
+            });
         }
     }
+}
 
-    private GameObject Create(GameObject prefab)
+public struct Ex4SpawnerData : IComponentData
+{
+    public Entity PlantPrefab;
+    public Entity PreyPrefab;
+    public Entity PredatorPrefab;
+
+    public int PlantCount;
+    public int PreyCount;
+    public int PredatorCount;
+
+    public int HalfWidth;
+    public int HalfHeight;
+
+    public byte Spawned;
+}
+
+[BurstCompile]
+[UpdateInGroup(typeof(InitializationSystemGroup))]
+public partial struct Ex4SpawnSystem : ISystem
+{
+    public void OnCreate(ref SystemState state)
     {
-        var go = Instantiate(prefab);
-        Respawn(go.transform);
-        return go;
+        state.RequireForUpdate<Ex4SpawnerData>();
+    }
+
+    public void OnUpdate(ref SystemState state)
+    {
+        var ecb = new EntityCommandBuffer(Allocator.Temp);
+
+        foreach (var spawner in SystemAPI.Query<RefRW<Ex4SpawnerData>>())
+        {
+            if (spawner.ValueRO.Spawned != 0)
+                continue;
+
+            uint plantSeedBase = 1u;
+            uint preySeedBase = plantSeedBase + (uint)spawner.ValueRO.PlantCount;
+            uint predatorSeedBase = preySeedBase + (uint)spawner.ValueRO.PreyCount;
+
+            SpawnMany(
+                ref ecb,
+                spawner.ValueRO.PlantPrefab,
+                spawner.ValueRO.PlantCount,
+                spawner.ValueRO.HalfWidth,
+                spawner.ValueRO.HalfHeight,
+                plantSeedBase
+            );
+
+            SpawnMany(
+                ref ecb,
+                spawner.ValueRO.PreyPrefab,
+                spawner.ValueRO.PreyCount,
+                spawner.ValueRO.HalfWidth,
+                spawner.ValueRO.HalfHeight,
+                preySeedBase
+            );
+
+            SpawnMany(
+                ref ecb,
+                spawner.ValueRO.PredatorPrefab,
+                spawner.ValueRO.PredatorCount,
+                spawner.ValueRO.HalfWidth,
+                spawner.ValueRO.HalfHeight,
+                predatorSeedBase
+            );
+
+            spawner.ValueRW.Spawned = 1;
+        }
+
+        ecb.Playback(state.EntityManager);
+        ecb.Dispose();
+    }
+
+    private static void SpawnMany(
+        ref EntityCommandBuffer ecb,
+        Entity prefab,
+        int count,
+        int halfWidth,
+        int halfHeight,
+        uint seedBase)
+    {
+        for (int i = 0; i < count; i++)
+        {
+
+            Entity entity = ecb.Instantiate(prefab);
+
+            var random = Unity.Mathematics.Random.CreateFromIndex(seedBase + (uint)(i + 1));
+
+            float x = random.NextInt(-halfWidth, halfWidth);
+            float y = random.NextInt(-halfHeight, halfHeight);
+
+            ecb.SetComponent(entity, LocalTransform.FromPosition(new float3(x, y, 0f)));
+        }
     }
 }

@@ -19,6 +19,10 @@ public class PreyAuthoring : MonoBehaviour
                 AlwaysReproduce = false,
                 Reproduced = false
             });
+            AddComponent(entity, new VelocityComponent
+            {
+                Value = new Unity.Mathematics.float3(0f,0f,0f),
+            });
         }
     }
 }
