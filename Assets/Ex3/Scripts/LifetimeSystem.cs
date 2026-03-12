@@ -29,7 +29,7 @@ public partial struct LifetimeSystem : ISystem
         var touchingDistanceSq = settings.TouchingDistance * settings.TouchingDistance;
 
         var targetTransforms = _preyQuery.ToComponentDataArray<LocalTransform>(state.WorldUpdateAllocator);
-        var preyPositions = CollectionHelper.CreateNativeArray<float3>(targetTransforms.Length,state.WorldUpdateAllocator);
+        var preyPositions = CollectionHelper.CreateNativeArray<float3>(targetTransforms.Length, state.WorldUpdateAllocator);
         for (int i = 0; i < preyPositions.Length; i += 1)
         {
             preyPositions[i] = targetTransforms[i].Position;
@@ -105,10 +105,9 @@ partial struct PlantDecreasingFactorJob : IJobEntity
         plantLifetime.DecreasingFactor = 1.0f;
         foreach (var prey in PreyPositions)
         {
-            if (math.distancesq(prey,plantTransform.Position) < TouchingDistanceSq)
+            if (math.distancesq(prey, plantTransform.Position) < TouchingDistanceSq)
             {
                 plantLifetime.DecreasingFactor *= 2f;
-                break;
             }
         }
     }
@@ -127,19 +126,17 @@ partial struct PreyDecreasingFactorJob : IJobEntity
         preyLifetime.DecreasingFactor = 1.0f;
         foreach (var plant in PlantPositions)
         {
-            if (math.distancesq(plant , preyTransform.Position) < TouchingDistanceSq)
+            if (math.distancesq(plant, preyTransform.Position) < TouchingDistanceSq)
             {
                 preyLifetime.DecreasingFactor /= 2;
-                break;
             }
         }
 
         foreach (var predator in PredatorPositions)
         {
-            if (math.distancesq(predator , preyTransform.Position) < TouchingDistanceSq)
+            if (math.distancesq(predator, preyTransform.Position) < TouchingDistanceSq)
             {
                 preyLifetime.DecreasingFactor *= 2f;
-                break;
             }
         }
 
@@ -147,7 +144,8 @@ partial struct PreyDecreasingFactorJob : IJobEntity
         {
             foreach (var prey in PreyPositions)
             {
-                if (math.distancesq(prey, preyTransform.Position) < TouchingDistanceSq)
+                float distanceSq = math.distancesq(prey, preyTransform.Position);
+                if (distanceSq > 0 && distanceSq < TouchingDistanceSq)
                 {
                     preyLifetime.Reproduced = true;
                     break;
@@ -159,41 +157,42 @@ partial struct PreyDecreasingFactorJob : IJobEntity
     }
 }
 
-    [BurstCompile]
-    partial struct PredatorDecreasingFactorJob : IJobEntity
-    {
-        [ReadOnly] public NativeArray<float3> PredatorPositions;
-        [ReadOnly] public NativeArray<float3> PreyPositions;
-        [ReadOnly] public float TouchingDistanceSq;
+[BurstCompile]
+partial struct PredatorDecreasingFactorJob : IJobEntity
+{
+    [ReadOnly] public NativeArray<float3> PredatorPositions;
+    [ReadOnly] public NativeArray<float3> PreyPositions;
+    [ReadOnly] public float TouchingDistanceSq;
 
 
     void Execute(in LocalTransform predatorTransform, ref LifetimeComponent predatorLifetime, in PredatorTag _)
+    {
+        predatorLifetime.DecreasingFactor = 1.0f;
+        foreach (var prey in PreyPositions)
         {
-            predatorLifetime.DecreasingFactor = 1.0f;
-            foreach (var prey in PreyPositions)
+            if (math.distancesq(prey, predatorTransform.Position) < TouchingDistanceSq)
             {
-                if (math.distancesq(prey,  predatorTransform.Position) < TouchingDistanceSq)
-                {
-                    predatorLifetime.DecreasingFactor /= 2;
-                }
+                predatorLifetime.DecreasingFactor /= 2;
             }
-
-
-            if (!predatorLifetime.Reproduced)
-            {
-                foreach (var predator in PredatorPositions)
-                {
-                    if (math.distancesq(predator, predatorTransform.Position) < TouchingDistanceSq)
-                    {
-                        predatorLifetime.Reproduced = true;
-                        break;
-
-                    }
-                }
-            }
-
         }
+
+
+        if (!predatorLifetime.Reproduced)
+        {
+            foreach (var predator in PredatorPositions)
+            {
+                float distanceSq = math.distancesq(predator, predatorTransform.Position);
+                if (distanceSq > 0 && distanceSq < TouchingDistanceSq)
+                {
+                    predatorLifetime.Reproduced = true;
+                    break;
+
+                }
+            }
+        }
+
     }
+}
 
 [BurstCompile]
 partial struct LifetimeDecreaseJob : IJobEntity
@@ -211,7 +210,7 @@ partial struct LifetimeDecreaseJob : IJobEntity
         {
             lifetime.Reproduced = false;
             var random = Unity.Mathematics.Random.CreateFromIndex((uint)(entityIndex + Seed));
-            lifetime.Starting = random.NextInt(5,15);
+            lifetime.Starting = random.NextInt(5, 15);
             lifetime.Current = lifetime.Starting;
             ECB.AddComponent<RespawnTag>(sortKey, entity);
         }

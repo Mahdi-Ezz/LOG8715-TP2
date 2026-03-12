@@ -12,7 +12,7 @@ NullGfxDevice:
     Renderer: Null Device
     Vendor:   Unity Technologies
 Begin MonoManager ReloadAssembly
-- Loaded All Assemblies, in  0.112 seconds
+- Loaded All Assemblies, in  0.105 seconds
 - Finished resetting the current domain, in  0.002 seconds
 [Physics::Module] Selected backend.
 [Physics::Module] Name: PhysX
@@ -21,56 +21,56 @@ Begin MonoManager ReloadAssembly
 [Physics::Module] Integration Version: 1.0.0
 [Physics::Module] Threading Mode: Multi-Threaded
 Microsoft Media Foundation video decoding to texture disabled: graphics device is Null, only Direct3D 11 and Direct3D 12 (only on desktop) are supported for hardware-accelerated video decoding.
-UnloadTime: 1.041600 ms
+UnloadTime: 0.999600 ms
+No SRP present, no compute shader support, or running with -nographics. Mesh Deformation Systems disabled.
+No SRP present, no compute shader support, or running with -nographics. Mesh Deformation Systems disabled.
+No SRP present, no compute shader support, or running with -nographics. Mesh Deformation Systems disabled.
+Warning: No Graphics Device found. Deformation systems will not run.
+No SRP present, no compute shader support, or running with -nographics. Mesh Deformation Systems disabled.
+No SRP present, no compute shader support, or running with -nographics. Entities Graphics package disabled
 Chargement de la scene: Ex2
 Unloading 4 Unused Serialized files (Serialized files now loaded: 0)
-UnloadTime: 0.022700 ms
-Unloading 3 unused Assets to reduce memory usage. Loaded Objects now: 873.
-Total: 2.164800 ms (FindLiveObjects: 0.027600 ms CreateObjectMapping: 0.009900 ms MarkObjects: 2.118900 ms  DeleteObjects: 0.008100 ms)
+UnloadTime: 0.017700 ms
+Unloading 3 unused Assets to reduce memory usage. Loaded Objects now: 1260.
+Total: 2.406800 ms (FindLiveObjects: 0.034400 ms CreateObjectMapping: 0.014300 ms MarkObjects: 2.349400 ms  DeleteObjects: 0.008500 ms)
 
- FPS: 9643
- FPS: 78
- FPS: 77
- FPS: 67
- FPS: 79
- FPS: 78
+ FPS: 10965
+ FPS: 84
+ FPS: 64
+ FPS: 85
+ FPS: 86
  FPS: 82
  FPS: 82
+ FPS: 84
  FPS: 83
- FPS: 81
- FPS: 78
+ FPS: 84
+ FPS: 83
+ FPS: 83
+ FPS: 84
  FPS: 80
- FPS: 78
  FPS: 80
- FPS: 82
 Chargement de la scene: Ex3
 Unloading 3 Unused Serialized files (Serialized files now loaded: 0)
-UnloadTime: 88.145300 ms
-Unloading 11 unused Assets to reduce memory usage. Loaded Objects now: 843.
-Total: 19.962000 ms (FindLiveObjects: 0.026400 ms CreateObjectMapping: 0.010500 ms MarkObjects: 19.891400 ms  DeleteObjects: 0.033200 ms)
+UnloadTime: 86.839900 ms
+Unloading 11 unused Assets to reduce memory usage. Loaded Objects now: 1230.
+Total: 1.505500 ms (FindLiveObjects: 0.036400 ms CreateObjectMapping: 0.015300 ms MarkObjects: 1.423000 ms  DeleteObjects: 0.030600 ms)
 
- FPS: 82
-Streamed scene with   29ms latency from C:/Users/mahdi/Desktop/Poly/LOG8715/TP2/TP2-H26/TP2-H26/buildfinal/TP2_Data/StreamingAssets/EntityScenes/3b44430e06532c5438fe1d18dbef2ff6.0.entities
- FPS: 158
- FPS: 182
- FPS: 176
- FPS: 172
- FPS: 175
- FPS: 164
- FPS: 170
- FPS: 163
- FPS: 134
- FPS: 149
+ FPS: 80
+Streamed scene with   76ms latency from C:/Users/mahdi/Desktop/Poly/LOG8715/TP2/TP2-H26/TP2-H26/buildfinal/TP2_Data/StreamingAssets/EntityScenes/3b44430e06532c5438fe1d18dbef2ff6.0.entities
+ FPS: 123
+ FPS: 129
+ FPS: 145
+ FPS: 153
+ FPS: 157
+ FPS: 154
+ FPS: 160
+ FPS: 148
+ FPS: 145
  FPS: 147
- FPS: 146
+ FPS: 129
+ FPS: 130
+ FPS: 148
  FPS: 141
- FPS: 133
-Chargement de la scene: Ex2
-Unloading 3 Unused Serialized files (Serialized files now loaded: 0)
-UnloadTime: 6.362700 ms
-Unloading 1 unused Assets to reduce memory usage. Loaded Objects now: 40878.
-Total: 5.603600 ms (FindLiveObjects: 1.470500 ms CreateObjectMapping: 0.244200 ms MarkObjects: 3.842700 ms  DeleteObjects: 0.046100 ms)
-
 [Physics::Module] Cleanup current backned.
 [Physics::Module] Id: 0xf2b8ea05
 Input System module state changed to: ShutdownInProgress.
