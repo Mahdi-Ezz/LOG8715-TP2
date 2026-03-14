@@ -78,7 +78,6 @@ public partial struct LifetimeSystem : ISystem
         {
             ECB = ecb,
             DeltaTime = SystemAPI.Time.DeltaTime,
-            Seed = (uint)(SystemAPI.Time.ElapsedTime * 1000) + 1,
         };
         var combinedHandle = JobHandle.CombineDependencies(
             plantHandle,
@@ -199,19 +198,15 @@ partial struct LifetimeDecreaseJob : IJobEntity
 
 {
     public float DeltaTime;
-    public uint Seed;
     public EntityCommandBuffer.ParallelWriter ECB;
-    void Execute([EntityIndexInQuery] int entityIndex, [ChunkIndexInQuery] int sortKey, Entity entity, ref LifetimeComponent lifetime)
+    void Execute([ChunkIndexInQuery] int sortKey, Entity entity, ref LifetimeComponent lifetime)
     {
         lifetime.Current -= DeltaTime * lifetime.DecreasingFactor;
         if (lifetime.Current > 0) return;
 
         if (lifetime.Reproduced || lifetime.AlwaysReproduce)
         {
-            lifetime.Reproduced = false;
-            var random = Unity.Mathematics.Random.CreateFromIndex((uint)(entityIndex + Seed));
-            lifetime.Starting = random.NextInt(5, 15);
-            lifetime.Current = lifetime.Starting;
+
             ECB.AddComponent<RespawnTag>(sortKey, entity);
         }
         else
@@ -227,6 +222,6 @@ partial struct PlantScaleJob : IJobEntity
 {
     void Execute(ref LocalTransform transform, in PlantTag _, in LifetimeComponent lifetime)
     {
-        transform.Scale = lifetime.GetProgression();
+        transform.Scale = math.clamp(lifetime.GetProgression() ,0 ,1);
     }
 }

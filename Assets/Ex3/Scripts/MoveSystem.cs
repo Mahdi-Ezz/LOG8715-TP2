@@ -55,7 +55,7 @@ public partial struct MoveSystem : ISystem
         var movePredatorTowardPreyHandle = movePredatorTowardPreyJob.ScheduleParallel(movePreyTowardPlantHandle);
         var combinedHandle = JobHandle.CombineDependencies(
             movePredatorTowardPreyHandle,
-            movePreyTowardPlantHandle        
+            movePreyTowardPlantHandle
             );
 
         var velocityJob = new VelocityJob
@@ -88,7 +88,8 @@ partial struct MovePreyTowardPlantJob : IJobEntity
             }
         }
 
-        preyVelocity.Value = (closestPosition - preyTransform.Position) * PreySpeed;
+        var direction = closestPosition - preyTransform.Position;
+        preyVelocity.Value = math.lengthsq(direction) > 0.01f ? math.normalize(direction) * PreySpeed : float3.zero;
     }
 }
 
@@ -111,7 +112,8 @@ partial struct MovePredatorTowardPreyJob : IJobEntity
             }
         }
 
-        predatorVelocity.Value = (closestPosition - predatorTransform.Position) * PredatorSpeed;
+        var direction = closestPosition - predatorTransform.Position;
+        predatorVelocity.Value = math.lengthsq(direction) > 0.01f ? math.normalize(direction) * PredatorSpeed : float3.zero;
     }
 }
 

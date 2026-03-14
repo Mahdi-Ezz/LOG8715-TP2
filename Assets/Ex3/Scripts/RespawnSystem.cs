@@ -41,11 +41,15 @@ partial struct RespawnJob : IJobEntity
     public float HalfWidth;
     public EntityCommandBuffer.ParallelWriter Ecb;
 
-    void Execute([EntityIndexInQuery] int entityIndex, Entity entity, ref LocalTransform transform, in RespawnTag _)
+    void Execute([EntityIndexInQuery] int entityIndex, Entity entity, ref LocalTransform transform, in RespawnTag _, ref LifetimeComponent lifetime)
     {
         var random = Unity.Mathematics.Random.CreateFromIndex((uint) (entityIndex + Seed));
         float x = random.NextFloat(-HalfWidth, HalfWidth); ;
         float y = random.NextFloat(-HalfHeight, HalfHeight);
+
+        lifetime.Reproduced = false;
+        lifetime.Starting = random.NextInt(5, 15);
+        lifetime.Current = lifetime.Starting;
 
         transform.Position = new float3(x, y, 0f);
 
